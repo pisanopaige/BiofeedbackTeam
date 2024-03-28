@@ -69,7 +69,7 @@ def read_serial_data(ser):
 
 def notify_callback(sender: int, data: int, gstate: GameState):
     # Threshold for EMG data
-    threshold = 302
+    threshold = 305
     if data >= threshold:
         gstate.emg_triggered = True
     else:
@@ -122,11 +122,11 @@ def draw_text(screen, text, font, x, y, color=(255, 255, 255), bg_color=None):
 
     screen.blit(text_surface, text_rect)
 
-def reset_game(pipe_group, flappy, gparams):
+def reset_game(pipe_group, flappy, gparams, gstate):
     pipe_group.empty()
     flappy.rect.x = 100
     flappy.rect.y = int(gparams.screen_height / 2)
-    gparams.score = 0
+    gstate.score = 0
 
 async def main():
     pygame.init()
@@ -180,7 +180,7 @@ async def main():
 
         if gstate.flying and not gstate.game_over:
             time_now = pygame.time.get_ticks()
-            if time_now - gstate.last_pipe > gparams.pipe_frequency and len(pipe_group) < 6:  # Ensure only 6 pipes at most
+            if time_now - gstate.last_pipe > gparams.pipe_frequency and len(pipe_group) < 8:  # Ensure only 6 pipes at most
                 pipe_height = random.randint(-100, 100)
                 btm_pipe = Pipe(gparams.screen_width, int(gparams.screen_height / 2) + pipe_height, -1, gparams.pipe_gap, gparams.scroll_speed)
                 top_pipe = Pipe(gparams.screen_width, int(gparams.screen_height / 2) + pipe_height, 1, gparams.pipe_gap, gparams.scroll_speed)
@@ -197,7 +197,7 @@ async def main():
         if gstate.game_over:
             if button.draw(screen):
                 gstate.game_over = False
-                reset_game(pipe_group, flappy, gparams)
+                reset_game(pipe_group, flappy, gparams, gstate)  # Pass gstate to reset_game
             # Display score on screen when game over
             draw_text(screen, "Score: " + str(gstate.score), gparams.font, int(gparams.screen_width / 2) - 100, int(gparams.screen_height / 2), (255, 255, 255), (0, 0, 0))
 
@@ -217,4 +217,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
