@@ -10,7 +10,7 @@ class GameParams:
     def __init__(self):
         self.scroll_speed = 6  # Adjust scroll speed
         self.pipe_gap = 200
-        self.pipe_frequency = 1500
+        self.pipe_frequency = 4000
         self.screen_width = 864
         self.screen_height = 936
         self.fps = 60
@@ -110,9 +110,17 @@ class Bird(pygame.sprite.Sprite):
         else:
             self.image = pygame.transform.rotate(self.images[self.index], -90)
 
-def draw_text(screen, text, font, x, y):
-    img = font.render(text, True, (255,255,255))
-    screen.blit(img, (x, y))
+def draw_text(screen, text, font, x, y, color=(255, 255, 255), bg_color=None):
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect()
+    text_rect.topleft = (x, y)
+
+    if bg_color:
+        background_surface = pygame.Surface((text_rect.width, text_rect.height))
+        background_surface.fill(bg_color)
+        screen.blit(background_surface, text_rect.topleft)
+
+    screen.blit(text_surface, text_rect)
 
 def reset_game(pipe_group, flappy, gparams):
     pipe_group.empty()
@@ -172,7 +180,7 @@ async def main():
 
         if gstate.flying and not gstate.game_over:
             time_now = pygame.time.get_ticks()
-            if time_now - gstate.last_pipe > gparams.pipe_frequency and len(pipe_group) < 2:  # Ensure only 2 pipes at most
+            if time_now - gstate.last_pipe > gparams.pipe_frequency and len(pipe_group) < 6:  # Ensure only 6 pipes at most
                 pipe_height = random.randint(-100, 100)
                 btm_pipe = Pipe(gparams.screen_width, int(gparams.screen_height / 2) + pipe_height, -1, gparams.pipe_gap, gparams.scroll_speed)
                 top_pipe = Pipe(gparams.screen_width, int(gparams.screen_height / 2) + pipe_height, 1, gparams.pipe_gap, gparams.scroll_speed)
@@ -190,6 +198,8 @@ async def main():
             if button.draw(screen):
                 gstate.game_over = False
                 reset_game(pipe_group, flappy, gparams)
+            # Display score on screen when game over
+            draw_text(screen, "Score: " + str(gstate.score), gparams.font, int(gparams.screen_width / 2) - 100, int(gparams.screen_height / 2), (255, 255, 255), (0, 0, 0))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
