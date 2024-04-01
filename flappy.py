@@ -69,7 +69,7 @@ def read_serial_data(ser):
 
 def notify_callback(sender: int, data: int, gstate: GameState):
     # Threshold for EMG data
-    threshold = 305
+    threshold = 303
     if data >= threshold:
         gstate.emg_triggered = True
     else:
